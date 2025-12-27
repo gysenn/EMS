@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Deactivation - EMS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card border-danger shadow">
+            <div class="card-header bg-danger text-white">
+                <h4><i class="bi bi-exclamation-triangle"></i> Confirm Employee Deactivation</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h5><i class="bi bi-exclamation-octagon"></i> Warning!</h5>
+                    <p class="mb-0">
+                        You are about to <strong>deactivate</strong> this employee account. 
+                        This action will prevent the employee from accessing the system.
+                    </p>
+                </div>
+
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Employee Information</h5>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr>
+                                <td width="35%"><strong>Employee ID:</strong></td>
+                                <td><span class="badge bg-secondary">{{ employee.employee_id }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Full Name:</strong></td>
+                                <td>{{ employee.user.get_full_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ employee.user.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Department:</strong></td>
+                                <td>{{ employee.get_department_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Designation:</strong></td>
+                                <td>{{ employee.designation }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Joining Date:</strong></td>
+                                <td>{{ employee.date_of_joining|date:"F d, Y" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <p class="mb-2"><strong>What will happen:</strong></p>
+                    <ul class="mb-0">
+                        <li>Employee will be marked as <strong>inactive</strong></li>
+                        <li>User will not be able to login to the system</li>
+                        <li>Historical data will be preserved</li>
+                        <li>This action can be reversed by an administrator</li>
+                    </ul>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'employees:employee_list' %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-arrow-left"></i> Cancel - Go Back
+                        </a>
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="bi bi-person-x"></i> Confirm Deactivation
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-shield-lock"></i> This action requires admin privileges
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

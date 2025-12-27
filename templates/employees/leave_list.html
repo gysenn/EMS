@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Requests - EMS{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2>Leave Requests</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{% url 'employees:leave_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Request Leave
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Leave Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Days</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in leaves %}
+                    <tr>
+                        <td>{{ leave.employee.user.get_full_name }}</td>
+                        <td>{{ leave.get_leave_type_display }}</td>
+                        <td>{{ leave.start_date }}</td>
+                        <td>{{ leave.end_date }}</td>
+                        <td>{{ leave.days_requested }}</td>
+                        <td>{{ leave.reason|truncatewords:10 }}</td>
+                        <td>
+                            <span class="badge bg-{% if leave.status == 'pending' %}warning{% elif leave.status == 'approved' %}success{% else %}danger{% endif %}">
+                                {{ leave.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if user.profile.role in 'admin,manager' and leave.status == 'pending' %}
+                            <a href="{% url 'employees:leave_approve' leave.pk %}" class="btn btn-sm btn-warning">
+                                Review
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center">No leave requests found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

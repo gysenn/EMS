@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - EMS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-person-circle"></i> My Profile</h4>
+            </div>
+            <div class="card-body">
+                <!-- User Information Display -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h5 class="border-bottom pb-2 mb-3">User Information</h5>
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td width="30%"><strong><i class="bi bi-person"></i> Username:</strong></td>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong><i class="bi bi-person-badge"></i> Full Name:</strong></td>
+                                    <td>{{ user.get_full_name|default:"Not set" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong><i class="bi bi-envelope"></i> Email:</strong></td>
+                                    <td>{{ user.email|default:"Not set" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong><i class="bi bi-shield-check"></i> Role:</strong></td>
+                                    <td>
+                                        <span class="badge bg-{% if user.profile.role == 'admin' %}danger{% elif user.profile.role == 'manager' %}warning{% else %}primary{% endif %}">
+                                            {{ user.profile.get_role_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong><i class="bi bi-calendar-check"></i> Date Joined:</strong></td>
+                                    <td>{{ user.date_joined|date:"F d, Y" }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Employee Information (if user is an employee) -->
+                {% if user.employee %}
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h5 class="border-bottom pb-2 mb-3">Employee Information</h5>
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-3">
+                                {% if user.employee.photo %}
+                                <img src="{{ user.employee.photo.url }}" class="img-fluid rounded-circle" style="max-width: 150px;" alt="Profile Photo">
+                                {% else %}
+                                <i class="bi bi-person-circle text-muted" style="font-size: 150px;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <table class="table table-borderless">
+                                    <tbody>
+                                        <tr>
+                                            <td width="40%"><strong>Employee ID:</strong></td>
+                                            <td>{{ user.employee.employee_id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Department:</strong></td>
+                                            <td>{{ user.employee.get_department_display }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Designation:</strong></td>
+                                            <td>{{ user.employee.designation }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Date of Joining:</strong></td>
+                                            <td>{{ user.employee.date_of_joining|date:"F d, Y" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Status:</strong></td>
+                                            <td>
+                                                <span class="badge bg-{% if user.employee.is_active %}success{% else %}danger{% endif %}">
+                                                    {% if user.employee.is_active %}Active{% else %}Inactive{% endif %}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                {% endif %}
+
+                <!-- Profile Update Form -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <h5 class="border-bottom pb-2 mb-3">Update Contact Information</h5>
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-telephone"></i> Phone Number</label>
+                                <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}" maxlength="15">
+                                {% if form.phone.errors %}
+                                <div class="text-danger small">{{ form.phone.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-geo-alt"></i> Address</label>
+                                <textarea name="address" class="form-control" rows="3">{{ form.address.value|default:'' }}</textarea>
+                                {% if form.address.errors %}
+                                <div class="text-danger small">{{ form.address.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Update Profile
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Password Link -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Need to change your password?</strong><br>
+                            Contact your administrator or visit the <a href="/admin/password_change/" class="alert-link">password change page</a>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

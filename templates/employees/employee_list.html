@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Employees - EMS{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2>Employees</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <div class="btn-group">
+            <a href="{% url 'employees:employee_create' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Employee
+            </a>
+            <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                <span class="visually-hidden">Export</span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'employees:export_employees' 'pdf' %}">Export PDF</a></li>
+                <li><a class="dropdown-item" href="{% url 'employees:export_employees' 'excel' %}">Export Excel</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Designation</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td>
+                            {% if employee.photo %}
+                            <img src="{{ employee.photo.url }}" class="rounded-circle" width="40" height="40">
+                            {% else %}
+                            <i class="bi bi-person-circle" style="font-size: 40px;"></i>
+                            {% endif %}
+                        </td>
+                        <td>{{ employee.employee_id }}</td>
+                        <td>{{ employee.user.get_full_name }}</td>
+                        <td>{{ employee.user.email }}</td>
+                        <td>{{ employee.get_department_display }}</td>
+                        <td>{{ employee.designation }}</td>
+                        <td>{{ employee.phone }}</td>
+                        <td>
+                            <span class="badge bg-{% if employee.is_active %}success{% else %}danger{% endif %}">
+                                {% if employee.is_active %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'employees:employee_detail' employee.pk %}" class="btn btn-sm btn-info">View</a>
+                            <a href="{% url 'employees:employee_update' employee.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center">No employees found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Record Attendance - EMS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-calendar-check"></i> Record Attendance</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}</div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-person"></i> Employee *</label>
+                        <select name="employee" class="form-select" required>
+                            <option value="">-- Select Employee --</option>
+                            {% for emp in form.employee.field.queryset %}
+                            <option value="{{ emp.id }}" {% if form.employee.value == emp.id %}selected{% endif %}>
+                                {{ emp.employee_id }} - {{ emp.user.get_full_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.employee.errors %}
+                        <div class="text-danger small">{{ form.employee.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-calendar3"></i> Date *</label>
+                            <input type="date" name="date" class="form-control" value="{{ form.date.value|date:'Y-m-d'|default:'' }}" required>
+                            {% if form.date.errors %}
+                            <div class="text-danger small">{{ form.date.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-check-circle"></i> Status *</label>
+                            <select name="status" class="form-select" required>
+                                <option value="">-- Select Status --</option>
+                                <option value="present" {% if form.status.value == 'present' %}selected{% endif %}>Present</option>
+                                <option value="absent" {% if form.status.value == 'absent' %}selected{% endif %}>Absent</option>
+                                <option value="half_day" {% if form.status.value == 'half_day' %}selected{% endif %}>Half Day</option>
+                                <option value="leave" {% if form.status.value == 'leave' %}selected{% endif %}>On Leave</option>
+                            </select>
+                            {% if form.status.errors %}
+                            <div class="text-danger small">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-clock"></i> Check In Time</label>
+                            <input type="time" name="check_in" class="form-control" value="{{ form.check_in.value|default:'' }}">
+                            <small class="form-text text-muted">Leave blank if absent</small>
+                            {% if form.check_in.errors %}
+                            <div class="text-danger small">{{ form.check_in.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label"><i class="bi bi-clock-history"></i> Check Out Time</label>
+                            <input type="time" name="check_out" class="form-control" value="{{ form.check_out.value|default:'' }}">
+                            <small class="form-text text-muted">Leave blank if not yet checked out</small>
+                            {% if form.check_out.errors %}
+                            <div class="text-danger small">{{ form.check_out.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-chat-left-text"></i> Remarks</label>
+                        <textarea name="remarks" class="form-control" rows="3" placeholder="Add any additional notes or comments...">{{ form.remarks.value|default:'' }}</textarea>
+                        {% if form.remarks.errors %}
+                        <div class="text-danger small">{{ form.remarks.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> Ensure the date and employee combination is unique. Cannot record duplicate attendance for the same date.
+                    </div>
+                    
+                    <div class="text-end">
+                        <a href="{% url 'employees:attendance_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Attendance
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

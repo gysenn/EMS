@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Leave Request - EMS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-clipboard-check"></i> Review Leave Request</h4>
+            </div>
+            <div class="card-body">
+                <!-- Leave Request Details -->
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2 mb-3">Leave Request Details</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td width="40%"><strong>Employee:</strong></td>
+                                    <td>{{ leave.employee.user.get_full_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Employee ID:</strong></td>
+                                    <td><span class="badge bg-secondary">{{ leave.employee.employee_id }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Department:</strong></td>
+                                    <td>{{ leave.employee.get_department_display }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Leave Type:</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ leave.get_leave_type_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless table-sm">
+                                <tr>
+                                    <td width="40%"><strong>Start Date:</strong></td>
+                                    <td>{{ leave.start_date|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>End Date:</strong></td>
+                                    <td>{{ leave.end_date|date:"F d, Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Days Requested:</strong></td>
+                                    <td><strong>{{ leave.days_requested }} days</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Applied On:</strong></td>
+                                    <td>{{ leave.created_at|date:"F d, Y" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6><strong>Reason for Leave:</strong></h6>
+                                    <p class="mb-0">{{ leave.reason }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Approval Form -->
+                <div>
+                    <h5 class="border-bottom pb-2 mb-3">Your Decision</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-check-square"></i> Decision *</label>
+                            <select name="status" class="form-select" required>
+                                <option value="">-- Select Decision --</option>
+                                <option value="approved" {% if form.status.value == 'approved' %}selected{% endif %}>
+                                    Approve
+                                </option>
+                                <option value="rejected" {% if form.status.value == 'rejected' %}selected{% endif %}>
+                                    Reject
+                                </option>
+                            </select>
+                            {% if form.status.errors %}
+                            <div class="text-danger small">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-chat-left-text"></i> Remarks</label>
+                            <textarea name="remarks" class="form-control" rows="4" placeholder="Add your comments or reasons for the decision...">{{ form.remarks.value|default:'' }}</textarea>
+                            <small class="form-text text-muted">
+                                Provide feedback or reasons for your decision
+                            </small>
+                            {% if form.remarks.errors %}
+                            <div class="text-danger small">{{ form.remarks.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Note:</strong> This action cannot be undone. The employee will be notified of your decision.
+                        </div>
+                        
+                        <div class="text-end">
+                            <a href="{% url 'employees:leave_list' %}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-send"></i> Submit Decision
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
