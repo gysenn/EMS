@@ -7,20 +7,20 @@
     <div class="col-md-6 offset-md-3">
         <div class="card border-danger shadow">
             <div class="card-header bg-danger text-white">
-                <h4><i class="bi bi-exclamation-triangle"></i> Confirm Employee Deactivation</h4>
+                <h4><i class="bi bi-exclamation-triangle"></i> Confirm Deactivation</h4>
             </div>
             <div class="card-body">
                 <div class="alert alert-danger">
                     <h5><i class="bi bi-exclamation-octagon"></i> Warning!</h5>
                     <p class="mb-0">
-                        You are about to <strong>deactivate</strong> this employee account. 
-                        This action will prevent the employee from accessing the system.
+                        You are about to <strong>deactivate</strong> this user account. 
+                        This action will prevent the user from accessing the system.
                     </p>
                 </div>
 
                 <div class="card bg-light mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">Employee Information</h5>
+                        <h5 class="card-title">User Information</h5>
                         <table class="table table-sm table-borderless mb-0">
                             <tr>
                                 <td width="35%"><strong>Employee ID:</strong></td>
@@ -31,8 +31,20 @@
                                 <td>{{ employee.user.get_full_name }}</td>
                             </tr>
                             <tr>
+                                <td><strong>Username:</strong></td>
+                                <td>{{ employee.user.username }}</td>
+                            </tr>
+                            <tr>
                                 <td><strong>Email:</strong></td>
                                 <td>{{ employee.user.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Role:</strong></td>
+                                <td>
+                                    <span class="badge bg-{% if target_role == 'admin' %}danger{% elif target_role == 'manager' %}warning{% else %}primary{% endif %}">
+                                        {{ employee.user.profile.get_role_display }}
+                                    </span>
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Department:</strong></td>
@@ -53,12 +65,20 @@
                 <div class="alert alert-warning">
                     <p class="mb-2"><strong>What will happen:</strong></p>
                     <ul class="mb-0">
-                        <li>Employee will be marked as <strong>inactive</strong></li>
+                        <li>User will be marked as <strong>inactive</strong></li>
                         <li>User will not be able to login to the system</li>
+                        <li>Employee record will be marked as inactive</li>
                         <li>Historical data will be preserved</li>
                         <li>This action can be reversed by an administrator</li>
                     </ul>
                 </div>
+
+                {% if user.profile.role == 'manager' %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Manager Note:</strong> You can only deactivate employees. Admin and other manager accounts require admin privileges to deactivate.
+                </div>
+                {% endif %}
 
                 <form method="post">
                     {% csrf_token %}
@@ -74,7 +94,7 @@
 
                 <div class="text-center mt-3">
                     <small class="text-muted">
-                        <i class="bi bi-shield-lock"></i> This action requires admin privileges
+                        <i class="bi bi-shield-lock"></i> This action requires appropriate privileges
                     </small>
                 </div>
             </div>
