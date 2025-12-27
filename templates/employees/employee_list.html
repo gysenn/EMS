@@ -9,15 +9,21 @@
     </div>
     <div class="col-md-6 text-end">
         <div class="btn-group">
+            {% if user.profile.role == 'admin' %}
             <a href="{% url 'employees:employee_create' %}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Add Employee
             </a>
+            {% endif %}
             <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
                 <span class="visually-hidden">Export</span>
             </button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="{% url 'employees:export_employees' 'pdf' %}">Export PDF</a></li>
-                <li><a class="dropdown-item" href="{% url 'employees:export_employees' 'excel' %}">Export Excel</a></li>
+                <li><a class="dropdown-item" href="{% url 'employees:export_employees' 'pdf' %}">
+                    <i class="bi bi-file-pdf"></i> Export PDF
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'employees:export_employees' 'excel' %}">
+                    <i class="bi bi-file-excel"></i> Export Excel
+                </a></li>
             </ul>
         </div>
     </div>
@@ -35,7 +41,7 @@
                         <th>Email</th>
                         <th>Department</th>
                         <th>Designation</th>
-                        <th>Phone</th>
+                        <th>Role</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -55,15 +61,32 @@
                         <td>{{ employee.user.email }}</td>
                         <td>{{ employee.get_department_display }}</td>
                         <td>{{ employee.designation }}</td>
-                        <td>{{ employee.phone }}</td>
+                        <td>
+                            <span class="badge bg-{% if employee.user.profile.role == 'admin' %}danger{% elif employee.user.profile.role == 'manager' %}warning{% else %}primary{% endif %}">
+                                {{ employee.user.profile.get_role_display }}
+                            </span>
+                        </td>
                         <td>
                             <span class="badge bg-{% if employee.is_active %}success{% else %}danger{% endif %}">
                                 {% if employee.is_active %}Active{% else %}Inactive{% endif %}
                             </span>
                         </td>
                         <td>
-                            <a href="{% url 'employees:employee_detail' employee.pk %}" class="btn btn-sm btn-info">View</a>
-                            <a href="{% url 'employees:employee_update' employee.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="{% url 'employees:employee_detail' employee.pk %}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            {% if user.profile.role == 'admin' %}
+                            <a href="{% url 'employees:employee_update' employee.pk %}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            <a href="{% url 'employees:employee_delete' employee.pk %}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                            {% elif user.profile.role == 'manager' and employee.user.profile.role == 'employee' %}
+                            <a href="{% url 'employees:employee_delete' employee.pk %}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}

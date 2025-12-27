@@ -110,34 +110,58 @@ def employee_update(request, pk):
     return render(request, 'employees/employee_form.html', {'form': form, 'action': 'Update'})
 
 @login_required
-@role_required(['admin'])
 def employee_delete(request, pk):
+    """
+    Delete/deactivate employee with role-based permissions:
+    - Admin: Can delete both employees and managers
+    - Manager: Can only delete employees (not other managers)
+    - Employee: Cannot delete anyone
+    """
     employee = get_object_or_404(Employee, pk=pk)
+    user_role = getattr(request.user.profile, 'role', 'employee') if hasattr(request.user, 'profile') else 'employee'
+    
+    # Get the target user's role
+    target_role = getattr(employee.user.profile, 'role', 'employee') if hasattr(employee.user, 'profile') else 'employee'
+    
+    # Permission check
+    if user_role == 'employee':
+        messages.error(request, 'You do not have permission to delete employees')
+        return redirect('dashboard')
+    
+    if user_role == 'manager' and target_role in ['admin', 'manager']:
+        messages.error(request, 'Managers can only delete employees, not other managers or admins')
+        return redirect('employees:employee_list')
+    
+    if user_role == 'admin' and target_role == 'admin' and employee.user == request.user:
+        messages.error(request, 'You cannot delete your own admin account')
+        return redirect('employees:employee_list')
+    
     if request.method == 'POST':
         employee.is_active = False
         employee.save()
-        messages.success(request, 'Employee deactivated successfully')
+        
+        # Also deactivate the user account
+        employee.user.is_active = False
+        employee.user.save()
+        
+        messages.success(request, f'Employee {employee.employee_id} has been deactivated successfully')
         return redirect('employees:employee_list')
-    return render(request, 'employees/employee_confirm_delete.html', {'employee': employee})
+    
+    return render(request, 'employees/employee_confirm_delete.html', {
+        'employee': employee,
+        'target_role': target_role
+    })
 
 @login_required
 def leave_list(request):
-    # Get user role safely
     user_role = getattr(request.user.profile, 'role', 'employee') if hasattr(request.user, 'profile') else 'employee'
     
     if user_role in ['admin', 'manager']:
-        # Admins/managers see all leaves
         leaves = LeaveRequest.objects.select_related('employee__user', 'approved_by').all()
     else:
-        # For normal employees, check if they have an Employee object
-        if hasattr(request.user, 'employee'):
-            leaves = LeaveRequest.objects.filter(employee=request.user.employee)
-        else:
-            messages.error(request, "You are not registered as an employee.")
-            leaves = LeaveRequest.objects.none()  # Show empty queryset
+        leaves = LeaveRequest.objects.filter(employee=request.user.employee)
     
     return render(request, 'employees/leave_list.html', {'leaves': leaves})
-
 
 @login_required
 def leave_create(request):
@@ -178,22 +202,14 @@ def leave_approve(request, pk):
 
 @login_required
 def attendance_list(request):
-    # Get user role safely
     user_role = getattr(request.user.profile, 'role', 'employee') if hasattr(request.user, 'profile') else 'employee'
     
     if user_role in ['admin', 'manager']:
-        # Admins/managers see all attendance (limited to 100)
         attendance = Attendance.objects.select_related('employee__user').all()[:100]
     else:
-        # Normal employees
-        if hasattr(request.user, 'employee'):
-            attendance = Attendance.objects.filter(employee=request.user.employee)[:30]
-        else:
-            messages.error(request, "You are not registered as an employee.")
-            attendance = Attendance.objects.none()  # empty queryset to prevent crash
-
+        attendance = Attendance.objects.filter(employee=request.user.employee)[:30]
+    
     return render(request, 'employees/attendance_list.html', {'attendance': attendance})
-
 
 @login_required
 @role_required(['admin', 'manager'])
