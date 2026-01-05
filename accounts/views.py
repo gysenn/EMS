@@ -32,17 +32,22 @@ def logout_view(request):
 @login_required
 def profile_view(request):
     profile, created = UserProfile.objects.get_or_create(user=request.user)
-    
+    employee = getattr(request.user, 'employee', None)
+
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=profile)
+        # Ensure role is preserved if the form does not include it (users shouldn't change their role)
+        data = request.POST.copy()
+        if 'role' not in data:
+            data['role'] = profile.role
+        form = UserProfileForm(data, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully')
             return redirect('accounts:profile')
     else:
         form = UserProfileForm(instance=profile)
-    
-    return render(request, 'accounts/profile.html', {'form': form})
+
+    return render(request, 'accounts/profile.html', {'form': form, 'employee': employee})
 
 @login_required
 def change_password(request):

@@ -48,14 +48,14 @@
                 <hr>
 
                 <!-- Employee Information (if user is an employee) -->
-                {% if user.employee %}
+                {% if employee %}
                 <div class="row mb-4">
                     <div class="col-md-12">
                         <h5 class="border-bottom pb-2 mb-3">Employee Information</h5>
                         <div class="row">
                             <div class="col-md-4 text-center mb-3">
-                                {% if user.employee.photo %}
-                                <img src="{{ user.employee.photo.url }}" class="img-fluid rounded-circle" style="max-width: 150px;" alt="Profile Photo">
+                                {% if employee.photo %}
+                                <img src="{{ employee.photo.url }}" class="img-fluid rounded-circle" style="max-width: 150px;" alt="Profile Photo">
                                 {% else %}
                                 <i class="bi bi-person-circle text-muted" style="font-size: 150px;"></i>
                                 {% endif %}
@@ -65,25 +65,25 @@
                                     <tbody>
                                         <tr>
                                             <td width="40%"><strong>Employee ID:</strong></td>
-                                            <td>{{ user.employee.employee_id }}</td>
+                                            <td>{{ employee.employee_id }}</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Department:</strong></td>
-                                            <td>{{ user.employee.get_department_display }}</td>
+                                            <td>{{ employee.get_department_display }}</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Designation:</strong></td>
-                                            <td>{{ user.employee.designation }}</td>
+                                            <td>{{ employee.designation }}</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Date of Joining:</strong></td>
-                                            <td>{{ user.employee.date_of_joining|date:"F d, Y" }}</td>
+                                            <td>{{ employee.date_of_joining|date:"F d, Y" }}</td>
                                         </tr>
                                         <tr>
                                             <td><strong>Status:</strong></td>
                                             <td>
-                                                <span class="badge bg-{% if user.employee.is_active %}success{% else %}danger{% endif %}">
-                                                    {% if user.employee.is_active %}Active{% else %}Inactive{% endif %}
+                                                <span class="badge bg-{% if employee.is_active %}success{% else %}danger{% endif %}">
+                                                    {% if employee.is_active %}Active{% else %}Inactive{% endif %}
                                                 </span>
                                             </td>
                                         </tr>
