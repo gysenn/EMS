@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Salary Component - EMS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-currency-dollar"></i> {{ action }} Salary Component</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Employee *</label>
+                        <select name="employee" class="form-select" required>
+                            <option value="">-- Select Employee --</option>
+                            {% for emp in form.employee.field.queryset %}
+                            <option value="{{ emp.id }}" {% if form.employee.value == emp.id|stringformat:"s" %}selected{% endif %}>
+                                {{ emp.employee_id }} - {{ emp.user.get_full_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.employee.errors %}
+                        <div class="text-danger small mt-1">{{ form.employee.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Component Type *</label>
+                        <select name="component_type" class="form-select" required>
+                            <option value="">-- Select Type --</option>
+                            <option value="allowance" {% if form.component_type.value == 'allowance' %}selected{% endif %}>Allowance</option>
+                            <option value="deduction" {% if form.component_type.value == 'deduction' %}selected{% endif %}>Deduction</option>
+                            <option value="bonus" {% if form.component_type.value == 'bonus' %}selected{% endif %}>Bonus</option>
+                        </select>
+                        {% if form.component_type.errors %}
+                        <div class="text-danger small mt-1">{{ form.component_type.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Name *</label>
+                        <input type="text" name="name" class="form-control" value="{{ form.name.value|default:'' }}" required placeholder="e.g., Performance Bonus">
+                        {% if form.name.errors %}
+                        <div class="text-danger small mt-1">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Amount *</label>
+                        <input type="number" name="amount" class="form-control" value="{{ form.amount.value|default:'' }}" step="0.01" required placeholder="0.00">
+                        {% if form.amount.errors %}
+                        <div class="text-danger small mt-1">{{ form.amount.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_recurring" class="form-check-input" id="isRecurring" {% if form.is_recurring.value %}checked{% endif %}>
+                        <label class="form-check-label" for="isRecurring">
+                            Is Recurring (applies every month)
+                        </label>
+                        {% if form.is_recurring.errors %}
+                        <div class="text-danger small mt-1">{{ form.is_recurring.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Applicable Month (for one-time components)</label>
+                        <input type="month" name="month" class="form-control" value="{{ form.month.value|default:'' }}">
+                        <small class="form-text text-muted">Leave empty for recurring components</small>
+                        {% if form.month.errors %}
+                        <div class="text-danger small mt-1">{{ form.month.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Optional description">{{ form.description.value|default:'' }}</textarea>
+                        {% if form.description.errors %}
+                        <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-end">
+                        <a href="{% url 'employees:salary_component_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Component
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

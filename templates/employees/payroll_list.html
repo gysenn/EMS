@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Payroll Management - EMS{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h2><i class="bi bi-cash-stack"></i> Payroll Management</h2>
+    </div>
+    <div class="col-md-6 text-end">
+        <a href="{% url 'employees:payroll_generate' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Generate Payroll
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Month</label>
+                <input type="month" name="month" class="form-control" value="{{ selected_month }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All</option>
+                    <option value="draft" {% if selected_status == 'draft' %}selected{% endif %}>Draft</option>
+                    <option value="processed" {% if selected_status == 'processed' %}selected{% endif %}>Processed</option>
+                    <option value="paid" {% if selected_status == 'paid' %}selected{% endif %}>Paid</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Payroll Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Employee Name</th>
+                        <th>Month</th>
+                        <th>Gross Salary</th>
+                        <th>Deductions</th>
+                        <th>Net Salary</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payroll in payrolls %}
+                    <tr>
+                        <td>{{ payroll.employee.employee_id }}</td>
+                        <td>{{ payroll.employee.user.get_full_name }}</td>
+                        <td>{{ payroll.month|date:"F Y" }}</td>
+                        <td>${{ payroll.gross_salary|floatformat:2 }}</td>
+                        <td>${{ payroll.total_deductions|floatformat:2 }}</td>
+                        <td><strong>${{ payroll.net_salary|floatformat:2 }}</strong></td>
+                        <td>
+                            <span class="badge bg-{% if payroll.status == 'draft' %}secondary{% elif payroll.status == 'processed' %}warning{% else %}success{% endif %}">
+                                {{ payroll.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'employees:payroll_detail' payroll.pk %}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <a href="{% url 'employees:download_salary_slip' payroll.pk %}" class="btn btn-sm btn-success">
+                                <i class="bi bi-download"></i> PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No payroll records found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

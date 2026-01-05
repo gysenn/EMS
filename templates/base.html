@@ -22,46 +22,108 @@
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                               href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
                         </li>
+                        
                         {% if user.profile.role in 'admin,manager' %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'employees:employee_list' %}">Employees</a>
+                            <a class="nav-link {% if '/employees/' in request.path and '/payroll' not in request.path %}active{% endif %}" 
+                               href="{% url 'employees:employee_list' %}">
+                                <i class="bi bi-people"></i> Employees
+                            </a>
                         </li>
                         {% endif %}
+                        
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'employees:leave_list' %}">Leaves</a>
+                            <a class="nav-link {% if '/leaves' in request.path %}active{% endif %}" 
+                               href="{% url 'employees:leave_list' %}">
+                                <i class="bi bi-calendar-x"></i> Leaves
+                            </a>
                         </li>
+                        
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'employees:attendance_list' %}">Attendance</a>
+                            <a class="nav-link {% if '/attendance' in request.path %}active{% endif %}" 
+                               href="{% url 'employees:attendance_list' %}">
+                                <i class="bi bi-calendar-check"></i> Attendance
+                            </a>
                         </li>
+                        
+                        {% if user.profile.role == 'admin' %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if '/payroll' in request.path or '/salary-component' in request.path %}active{% endif %}" 
+                               href="#" id="payrollDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-cash-stack"></i> Payroll
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'employees:payroll_list' %}">
+                                        <i class="bi bi-list"></i> Payroll List
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'employees:payroll_generate' %}">
+                                        <i class="bi bi-calculator"></i> Generate Payroll
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'employees:salary_component_list' %}">
+                                        <i class="bi bi-currency-dollar"></i> Salary Components
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        {% endif %}
                     {% endif %}
                 </ul>
+                
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle"></i> {{ user.username }}
-                                <span class="badge bg-{% if user.profile.role == 'admin' %}danger{% elif user.profile.role == 'manager' %}warning{% else %}primary{% endif %}">
+                                <span class="badge bg-{% if user.profile.role == 'admin' %}danger{% elif user.profile.role == 'manager' %}warning{% else %}primary{% endif %} ms-1">
                                     {{ user.profile.get_role_display }}
                                 </span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
-                                    <i class="bi bi-person"></i> My Profile
-                                </a></li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}">
-                                    <i class="bi bi-key"></i> Change Password
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                        <i class="bi bi-person"></i> My Profile
+                                    </a>
+                                </li>
+                                
+                                {% if user.profile.role == 'employee' and user.employee %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'employees:my_payrolls' %}">
+                                        <i class="bi bi-wallet2"></i> My Payrolls
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:change_password' %}">
+                                        <i class="bi bi-key"></i> Change Password
+                                    </a>
+                                </li>
+                                
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
-                                    <i class="bi bi-box-arrow-right"></i> Logout
-                                </a></li>
+                                
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+                            <a class="nav-link" href="{% url 'accounts:login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
                         </li>
                     {% endif %}
                 </ul>
@@ -69,10 +131,11 @@
         </div>
     </nav>
 
-    <div class="container-fluid mt-4">
+    <div class="container-fluid mt-4 mb-5">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
                     {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -82,7 +145,37 @@
         {% block content %}{% endblock %}
     </div>
 
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-3 mt-5">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">
+                        <i class="bi bi-building"></i> Employee Management System
+                    </p>
+                    <small class="text-muted">Version 2.0 - With Analytics & Payroll</small>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <p class="mb-0">
+                        <small>&copy; 2024 Your Company. All rights reserved.</small>
+                    </p>
+                    {% if user.is_authenticated %}
+                    <small class="text-muted">
+                        Logged in as {{ user.get_full_name|default:user.username }}
+                        <span class="badge bg-{% if user.profile.role == 'admin' %}danger{% elif user.profile.role == 'manager' %}warning{% else %}primary{% endif %} ms-1">
+                            {{ user.profile.get_role_display }}
+                        </span>
+                    </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    {% load static %}
+    <script src="{% static 'js/custom.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

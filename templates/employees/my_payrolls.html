@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}My Payrolls - EMS{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <h2><i class="bi bi-wallet2"></i> My Salary History</h2>
+    </div>
+</div>
+
+<div class="row">
+    {% for payroll in payrolls %}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-{% if payroll.status == 'paid' %}success{% else %}warning{% endif %} text-white">
+                <h5 class="mb-0">{{ payroll.month|date:"F Y" }}</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <td><strong>Gross Salary:</strong></td>
+                        <td class="text-end">${{ payroll.gross_salary|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Deductions:</strong></td>
+                        <td class="text-end text-danger">-${{ payroll.total_deductions|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="border-top">
+                        <td><strong>Net Salary:</strong></td>
+                        <td class="text-end"><strong class="text-success">${{ payroll.net_salary|floatformat:2 }}</strong></td>
+                    </tr>
+                </table>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <a href="{% url 'employees:payroll_detail' payroll.pk %}" class="btn btn-info btn-sm">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                    <a href="{% url 'employees:download_salary_slip' payroll.pk %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-download"></i> Download Slip
+                    </a>
+                </div>
+                
+                <div class="mt-2">
+                    <small class="text-muted">
+                        Status: <span class="badge bg-{% if payroll.status == 'paid' %}success{% else %}warning{% endif %}">
+                            {{ payroll.get_status_display }}
+                        </span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-md-12">
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i>
+            <h5>No Payroll Records Yet</h5>
+            <p class="mb-0">Your payroll records will appear here once they are processed by the admin.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
