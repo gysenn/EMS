@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Generate Payroll - EMS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4><i class="bi bi-calculator"></i> Generate Payroll</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Payroll Generation Process:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Select month to generate payroll</li>
+                        <li>System will calculate salary for all active employees</li>
+                        <li>Attendance data will be considered</li>
+                        <li>Salary components and deductions will be applied</li>
+                        <li>Status will be set to "Processed"</li>
+                    </ul>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-calendar3"></i> Select Month *</label>
+                        <input type="month" name="month" class="form-control" required max="{{ today|date:'Y-m' }}">
+                        <small class="form-text text-muted">Select the month for which to generate payroll</small>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Note:</strong> 
+                        <ul class="mb-0">
+                            <li>Ensure attendance is recorded for the selected month</li>
+                            <li>Existing payroll for the same month will be skipped</li>
+                            <li>This process may take a few moments</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-calculator"></i> Generate Payroll
+                        </button>
+                        <a href="{% url 'employees:payroll_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

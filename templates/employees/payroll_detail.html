@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Payroll Details - EMS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-file-text"></i> Payroll Details</h4>
+                <div>
+                    <a href="{% url 'employees:payroll_list' %}" class="btn btn-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Back
+                    </a>
+                    <a href="{% url 'employees:download_salary_slip' payroll.pk %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-download"></i> Download PDF
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Employee Information -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="border-bottom pb-2">Employee Information</h5>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td width="40%"><strong>Employee ID:</strong></td>
+                                <td>{{ payroll.employee.employee_id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Name:</strong></td>
+                                <td>{{ payroll.employee.user.get_full_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Department:</strong></td>
+                                <td>{{ payroll.employee.get_department_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Designation:</strong></td>
+                                <td>{{ payroll.employee.designation }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="border-bottom pb-2">Payroll Information</h5>
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td width="40%"><strong>Month:</strong></td>
+                                <td>{{ payroll.month|date:"F Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    <span class="badge bg-{% if payroll.status == 'draft' %}secondary{% elif payroll.status == 'processed' %}warning{% else %}success{% endif %}">
+                                        {{ payroll.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Payment Date:</strong></td>
+                                <td>{{ payroll.payment_date|date:"M d, Y"|default:"Not Set" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Processed By:</strong></td>
+                                <td>{{ payroll.created_by.get_full_name|default:"System" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Attendance Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <h5 class="border-bottom pb-2">Attendance Summary</h5>
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h3 class="text-primary">{{ payroll.working_days }}</h3>
+                                        <p class="mb-0">Working Days</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h3 class="text-success">{{ payroll.present_days }}</h3>
+                                        <p class="mb-0">Present Days</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h3 class="text-danger">{{ payroll.absent_days }}</h3>
+                                        <p class="mb-0">Absent Days</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h3 class="text-warning">{{ payroll.leave_days }}</h3>
+                                        <p class="mb-0">Leave Days</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Breakdown -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="border-bottom pb-2">Earnings</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Basic Salary</td>
+                                <td class="text-end">${{ payroll.basic_salary|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>HRA</td>
+                                <td class="text-end">${{ payroll.hra|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Transport Allowance</td>
+                                <td class="text-end">${{ payroll.transport_allowance|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Medical Allowance</td>
+                                <td class="text-end">${{ payroll.medical_allowance|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Other Allowances</td>
+                                <td class="text-end">${{ payroll.other_allowances|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Bonus</td>
+                                <td class="text-end">${{ payroll.bonus|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="table-success fw-bold">
+                                <td>Gross Salary</td>
+                                <td class="text-end">${{ payroll.gross_salary|floatformat:2 }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="border-bottom pb-2">Deductions</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Tax</td>
+                                <td class="text-end">${{ payroll.tax|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Provident Fund</td>
+                                <td class="text-end">${{ payroll.provident_fund|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Insurance</td>
+                                <td class="text-end">${{ payroll.insurance|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Other Deductions</td>
+                                <td class="text-end">${{ payroll.other_deductions|floatformat:2 }}</td>
+                            </tr>
+                            <tr class="table-danger fw-bold">
+                                <td>Total Deductions</td>
+                                <td class="text-end">${{ payroll.total_deductions|floatformat:2 }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Net Salary -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h3 class="mb-0">
+                                    Net Salary: ${{ payroll.net_salary|floatformat:2 }}
+                                </h3>
+                                <small>Gross Salary - Total Deductions</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if payroll.remarks %}
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h5 class="border-bottom pb-2">Remarks</h5>
+                        <div class="alert alert-info">
+                            {{ payroll.remarks }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

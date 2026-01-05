@@ -1,53 +1,220 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Dashboard - EMS{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h2 class="mb-4">Dashboard</h2>
+        <h2 class="mb-4">
+            <i class="bi bi-speedometer2"></i> Dashboard
+            <span class="badge bg-{% if user_role == 'admin' %}danger{% elif user_role == 'manager' %}warning{% else %}primary{% endif %}">
+                {{ user.profile.get_role_display }}
+            </span>
+        </h2>
     </div>
 </div>
 
+<!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="card text-white bg-primary">
+        <div class="card text-white bg-primary h-100">
             <div class="card-body">
-                <h5 class="card-title">Total Employees</h5>
-                <h2>{{ total_employees }}</h2>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Employees</h6>
+                        <h2 class="mb-0">{{ total_employees }}</h2>
+                    </div>
+                    <i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
             </div>
         </div>
     </div>
+    
     <div class="col-md-3">
-        <div class="card text-white bg-warning">
+        <div class="card text-white bg-warning h-100">
             <div class="card-body">
-                <h5 class="card-title">Pending Leaves</h5>
-                <h2>{{ pending_leaves }}</h2>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Pending Leaves</h6>
+                        <h2 class="mb-0">{{ pending_leaves }}</h2>
+                    </div>
+                    <i class="bi bi-calendar-x" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
             </div>
         </div>
     </div>
-    {% if my_attendance_count %}
+    
+    {% if user_role in 'admin,manager' %}
     <div class="col-md-3">
-        <div class="card text-white bg-success">
+        <div class="card text-white bg-success h-100">
             <div class="card-body">
-                <h5 class="card-title">My Attendance (Month)</h5>
-                <h2>{{ my_attendance_count }}</h2>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Attendance Rate</h6>
+                        <h2 class="mb-0">{{ attendance_rate|floatformat:1 }}%</h2>
+                    </div>
+                    <i class="bi bi-check-circle-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Payroll Processed</h6>
+                        <h2 class="mb-0">${{ total_payroll.total|floatformat:0|default:"0" }}</h2>
+                        <small>{{ total_payroll.count|default:0 }} employees</small>
+                    </div>
+                    <i class="bi bi-cash-stack" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if user_role == 'employee' %}
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">My Attendance</h6>
+                        <h2 class="mb-0">{{ my_attendance_count }}/{{ working_days }}</h2>
+                        <small>{{ attendance_percentage|floatformat:1 }}%</small>
+                    </div>
+                    <i class="bi bi-calendar-check" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Leave Balance</h6>
+                        <h2 class="mb-0">{{ leave_balance }}</h2>
+                        <small>{{ used_leaves }} used</small>
+                    </div>
+                    <i class="bi bi-calendar-heart" style="font-size: 3rem; opacity: 0.5;"></i>
+                </div>
             </div>
         </div>
     </div>
     {% endif %}
 </div>
 
-<div class="row">
-    {% if user_role in 'admin,manager' %}
+<!-- Admin/Manager Analytics -->
+{% if user_role in 'admin,manager' %}
+<div class="row mb-4">
+    <!-- Department Statistics -->
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
-                <h5>Recent Leave Requests</h5>
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Department-wise Employees</h5>
+            </div>
+            <div class="card-body">
+                {% if department_stats %}
+                <canvas id="departmentChart"></canvas>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No employee data available yet. Add employees to see statistics.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Attendance Overview -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Monthly Attendance Overview</h5>
+            </div>
+            <div class="card-body">
+                {% if monthly_attendance %}
+                <canvas id="attendanceChart"></canvas>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No attendance data available for this month. Record attendance to see overview.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- Leave Statistics -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Leave Status Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if leave_stats %}
+                <canvas id="leaveChart"></canvas>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No leave requests this month. Chart will appear when leaves are requested.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Earners -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> Top 5 Earners</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-sm">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Department</th>
+                                <th class="text-end">Salary</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in top_earners %}
+                            <tr>
+                                <td>
+                                    <strong>{{ emp.user.get_full_name }}</strong><br>
+                                    <small class="text-muted">{{ emp.employee_id }}</small>
+                                </td>
+                                <td>{{ emp.get_department_display }}</td>
+                                <td class="text-end"><strong>${{ emp.salary|floatformat:0 }}</strong></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted">No employee data</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Leave Requests -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-clock-history"></i> Recent Leave Requests</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
                         <thead>
                             <tr>
                                 <th>Employee</th>
@@ -69,30 +236,162 @@
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr><td colspan="4" class="text-center">No recent leaves</td></tr>
+                            <tr><td colspan="4" class="text-center text-muted">No recent leaves</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                <div class="text-center mt-2">
+                    <a href="{% url 'employees:leave_list' %}" class="btn btn-sm btn-primary">View All Leaves</a>
+                </div>
             </div>
         </div>
     </div>
-    {% endif %}
     
-    {% if my_leaves %}
+    <!-- Payroll Summary -->
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
-                <h5>My Leave Requests</h5>
+                <h5><i class="bi bi-cash-coin"></i> Payroll Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <strong>This Month's Payroll:</strong><br>
+                    Processed: {{ total_payroll.count|default:0 }} employees<br>
+                    Total Amount: ${{ total_payroll.total|floatformat:2|default:"0.00" }}<br>
+                    Pending: {{ pending_payroll|default:0 }} employees
+                </div>
+                {% if pending_payroll > 0 %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Action Required:</strong> {{ pending_payroll }} payroll(s) pending processing
+                </div>
+                {% endif %}
+                <div class="d-grid gap-2">
+                    <a href="{% url 'employees:payroll_list' %}" class="btn btn-primary">
+                        <i class="bi bi-list"></i> View Payroll
+                    </a>
+                    <a href="{% url 'employees:payroll_generate' %}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Generate Payroll
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Employee Analytics -->
+{% if user_role == 'employee' %}
+<div class="row mb-4">
+    <!-- My Attendance Chart -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-check"></i> My Attendance This Month</h5>
+            </div>
+            <div class="card-body">
+                {% if my_attendance %}
+                <canvas id="myAttendanceChart"></canvas>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> No attendance recorded yet for this month.
+                </div>
+                {% endif %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'employees:attendance_list' %}" class="btn btn-sm btn-primary">View Full History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Salary Information -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-cash-stack"></i> Salary Information</h5>
+            </div>
+            <div class="card-body">
+                {% if current_payroll %}
+                <div class="alert alert-success">
+                    <h6><strong>Current Month Payroll</strong></h6>
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td><strong>Gross Salary:</strong></td>
+                            <td class="text-end">${{ current_payroll.gross_salary|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Deductions:</strong></td>
+                            <td class="text-end">${{ current_payroll.total_deductions|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="border-top">
+                            <td><strong>Net Salary:</strong></td>
+                            <td class="text-end"><strong>${{ current_payroll.net_salary|floatformat:2 }}</strong></td>
+                        </tr>
+                    </table>
+                    <div class="mt-2">
+                        <a href="{% url 'employees:download_salary_slip' current_payroll.pk %}" class="btn btn-sm btn-success w-100">
+                            <i class="bi bi-download"></i> Download Salary Slip
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-info-circle"></i> Payroll for current month not yet processed
+                </div>
+                {% endif %}
+                
+                <h6 class="mt-3"><strong>Salary Components:</strong></h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Basic Salary:</td>
+                        <td class="text-end">${{ user.employee.basic_salary|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>HRA:</td>
+                        <td class="text-end">${{ user.employee.hra|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Transport:</td>
+                        <td class="text-end">${{ user.employee.transport_allowance|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Medical:</td>
+                        <td class="text-end">${{ user.employee.medical_allowance|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="border-top fw-bold">
+                        <td>Total:</td>
+                        <td class="text-end">${{ user.employee.salary|floatformat:2 }}</td>
+                    </tr>
+                </table>
+                
+                <div class="d-grid">
+                    <a href="{% url 'employees:my_payrolls' %}" class="btn btn-primary">
+                        <i class="bi bi-file-text"></i> View All Payslips
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- My Recent Leaves -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar-x"></i> My Leave Requests</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-sm">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Type</th>
                                 <th>Period</th>
+                                <th>Days</th>
                                 <th>Status</th>
+                                <th>Applied On</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -100,19 +399,146 @@
                             <tr>
                                 <td>{{ leave.get_leave_type_display }}</td>
                                 <td>{{ leave.start_date }} to {{ leave.end_date }}</td>
+                                <td>{{ leave.days_requested }}</td>
                                 <td>
                                     <span class="badge bg-{% if leave.status == 'pending' %}warning{% elif leave.status == 'approved' %}success{% else %}danger{% endif %}">
                                         {{ leave.get_status_display }}
                                     </span>
                                 </td>
+                                <td>{{ leave.created_at|date:"M d, Y" }}</td>
                             </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-muted">No leave requests</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                <div class="text-center mt-2">
+                    <a href="{% url 'employees:leave_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Request Leave
+                    </a>
+                    <a href="{% url 'employees:leave_list' %}" class="btn btn-secondary">
+                        View All Leaves
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-    {% endif %}
 </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if user_role in 'admin,manager' %}
+// Department Chart
+{% if department_stats %}
+const deptCtx = document.getElementById('departmentChart');
+if (deptCtx) {
+    new Chart(deptCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for stat in department_stats %}'{{ stat.department }}',{% endfor %}],
+            datasets: [{
+                label: 'Employees',
+                data: [{% for stat in department_stats %}{{ stat.count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {beginAtZero: true}
+            }
+        }
+    });
+}
+{% endif %}
+
+// Attendance Chart
+{% if monthly_attendance %}
+const attCtx = document.getElementById('attendanceChart');
+if (attCtx) {
+    new Chart(attCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for stat in monthly_attendance %}'{{ stat.status|title }}',{% endfor %}],
+            datasets: [{
+                data: [{% for stat in monthly_attendance %}{{ stat.count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(153, 102, 255, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true
+        }
+    });
+}
+{% endif %}
+
+// Leave Chart
+{% if leave_stats %}
+const leaveCtx = document.getElementById('leaveChart');
+if (leaveCtx) {
+    new Chart(leaveCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for stat in leave_stats %}'{{ stat.status|title }}',{% endfor %}],
+            datasets: [{
+                data: [{% for stat in leave_stats %}{{ stat.count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 99, 132, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true
+        }
+    });
+}
+{% endif %}
+{% endif %}
+
+{% if user_role == 'employee' %}
+// My Attendance Chart
+{% if my_attendance %}
+const myAttCtx = document.getElementById('myAttendanceChart');
+if (myAttCtx) {
+    new Chart(myAttCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for stat in my_attendance %}'{{ stat.status|title }}',{% endfor %}],
+            datasets: [{
+                data: [{% for stat in my_attendance %}{{ stat.count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(153, 102, 255, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {position: 'bottom'}
+            }
+        }
+    });
+}
+{% endif %}
+{% endif %}
+</script>
 {% endblock %}

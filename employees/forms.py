@@ -1,5 +1,5 @@
 from django import forms
-from .models import Employee, LeaveRequest, Attendance
+from .models import Employee, LeaveRequest, Attendance, SalaryComponent, Payroll
 from django.contrib.auth.models import User
 
 class EmployeeForm(forms.ModelForm):
@@ -11,7 +11,8 @@ class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
         fields = ['employee_id', 'department', 'designation', 'date_of_birth', 
-                  'date_of_joining', 'salary', 'phone', 'address', 'photo', 'is_active']
+                  'date_of_joining', 'salary', 'phone', 'address', 'photo', 'is_active',
+                  'basic_salary', 'hra', 'transport_allowance', 'medical_allowance']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
             'date_of_joining': forms.DateInput(attrs={'type': 'date'}),
@@ -46,3 +47,23 @@ class AttendanceForm(forms.ModelForm):
             'check_out': forms.TimeInput(attrs={'type': 'time'}),
             'remarks': forms.Textarea(attrs={'rows': 2}),
         }
+
+class SalaryComponentForm(forms.ModelForm):
+    class Meta:
+        model = SalaryComponent
+        fields = ['employee', 'component_type', 'name', 'amount', 'is_recurring', 'month', 'description']
+        widgets = {
+            'month': forms.DateInput(attrs={'type': 'month'}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
+class PayrollForm(forms.ModelForm):
+    class Meta:
+        model = Payroll
+        fields = ['employee', 'month', 'status', 'payment_date', 'remarks']
+        widgets = {
+            'month': forms.DateInput(attrs={'type': 'month'}),
+            'payment_date': forms.DateInput(attrs={'type': 'date'}),
+            'remarks': forms.Textarea(attrs={'rows': 3}),
+        }
+    

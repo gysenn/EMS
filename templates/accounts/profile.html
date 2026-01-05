@@ -96,7 +96,7 @@
                 <hr>
                 {% endif %}
 
-                <!-- Profile Update Form -->
+                <!-- Profile Update Form - FIXED -->
                 <div class="row">
                     <div class="col-md-12">
                         <h5 class="border-bottom pb-2 mb-3">Update Contact Information</h5>
@@ -111,17 +111,17 @@
                             
                             <div class="mb-3">
                                 <label class="form-label"><i class="bi bi-telephone"></i> Phone Number</label>
-                                <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}" maxlength="15">
+                                <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}" maxlength="15" placeholder="Enter phone number">
                                 {% if form.phone.errors %}
-                                <div class="text-danger small">{{ form.phone.errors }}</div>
+                                <div class="text-danger small mt-1">{{ form.phone.errors }}</div>
                                 {% endif %}
                             </div>
                             
                             <div class="mb-3">
                                 <label class="form-label"><i class="bi bi-geo-alt"></i> Address</label>
-                                <textarea name="address" class="form-control" rows="3">{{ form.address.value|default:'' }}</textarea>
+                                <textarea name="address" class="form-control" rows="3" placeholder="Enter your address">{{ form.address.value|default:'' }}</textarea>
                                 {% if form.address.errors %}
-                                <div class="text-danger small">{{ form.address.errors }}</div>
+                                <div class="text-danger small mt-1">{{ form.address.errors }}</div>
                                 {% endif %}
                             </div>
                             
@@ -140,7 +140,9 @@
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i> 
                             <strong>Need to change your password?</strong><br>
-                            Contact your administrator or visit the <a href="/admin/password_change/" class="alert-link">password change page</a>.
+                            <a href="{% url 'accounts:change_password' %}" class="alert-link btn btn-sm btn-info mt-2">
+                                <i class="bi bi-key"></i> Change Password
+                            </a>
                         </div>
                     </div>
                 </div>

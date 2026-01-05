@@ -4,112 +4,170 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-8 offset-md-2">
+    <div class="col-md-10 offset-md-1">
         <div class="card">
             <div class="card-header">
-                <h4>{{ action }} Employee</h4>
+                <h4><i class="bi bi-person-plus"></i> {{ action }} Employee</h4>
             </div>
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     
-                    <h5 class="mb-3">User Information</h5>
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <h5 class="mb-3 border-bottom pb-2">User Information</h5>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Username</label>
-                            {{ form.username }}
+                            <label class="form-label">Username *</label>
+                            <input type="text" name="username" class="form-control" value="{{ form.username.value|default:'' }}" required>
+                            {% if form.username.errors %}
+                            <div class="text-danger small">{{ form.username.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            {{ form.email }}
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control" value="{{ form.email.value|default:'' }}" required>
+                            {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">First Name</label>
-                            {{ form.first_name }}
+                            <label class="form-label">First Name *</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" required>
+                            {% if form.first_name.errors %}
+                            <div class="text-danger small">{{ form.first_name.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Last Name</label>
-                            {{ form.last_name }}
+                            <label class="form-label">Last Name *</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:'' }}" required>
+                            {% if form.last_name.errors %}
+                            <div class="text-danger small">{{ form.last_name.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <hr>
-                    <h5 class="mb-3">Employee Information</h5>
+                    <h5 class="mb-3 border-bottom pb-2">Employee Information</h5>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Employee ID</label>
-                            {{ form.employee_id }}
+                            <label class="form-label">Employee ID *</label>
+                            <input type="text" name="employee_id" class="form-control" value="{{ form.employee_id.value|default:'' }}" required>
+                            {% if form.employee_id.errors %}
+                            <div class="text-danger small">{{ form.employee_id.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Department</label>
-                            {{ form.department }}
+                            <label class="form-label">Department *</label>
+                            <select name="department" class="form-select" required>
+                                <option value="">-- Select Department --</option>
+                                <option value="IT" {% if form.department.value == 'IT' %}selected{% endif %}>Information Technology</option>
+                                <option value="HR" {% if form.department.value == 'HR' %}selected{% endif %}>Human Resources</option>
+                                <option value="FIN" {% if form.department.value == 'FIN' %}selected{% endif %}>Finance</option>
+                                <option value="MKT" {% if form.department.value == 'MKT' %}selected{% endif %}>Marketing</option>
+                                <option value="OPS" {% if form.department.value == 'OPS' %}selected{% endif %}>Operations</option>
+                            </select>
+                            {% if form.department.errors %}
+                            <div class="text-danger small">{{ form.department.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Designation</label>
-                            {{ form.designation }}
+                            <label class="form-label">Designation *</label>
+                            <input type="text" name="designation" class="form-control" value="{{ form.designation.value|default:'' }}" required>
+                            {% if form.designation.errors %}
+                            <div class="text-danger small">{{ form.designation.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Phone</label>
-                            {{ form.phone }}
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Date of Birth</label>
-                            {{ form.date_of_birth }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Date of Joining</label>
-                            {{ form.date_of_joining }}
+                            <label class="form-label">Phone *</label>
+                            <input type="text" name="phone" class="form-control" value="{{ form.phone.value|default:'' }}" required>
+                            {% if form.phone.errors %}
+                            <div class="text-danger small">{{ form.phone.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">Salary</label>
-                            {{ form.salary }}
+                            <label class="form-label">Date of Birth *</label>
+                            <input type="date" name="date_of_birth" class="form-control" value="{{ form.date_of_birth.value|date:'Y-m-d'|default:'' }}" required>
+                            {% if form.date_of_birth.errors %}
+                            <div class="text-danger small">{{ form.date_of_birth.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Photo</label>
-                            {{ form.photo }}
+                            <label class="form-label">Date of Joining *</label>
+                            <input type="date" name="date_of_joining" class="form-control" value="{{ form.date_of_joining.value|date:'Y-m-d'|default:'' }}" required>
+                            {% if form.date_of_joining.errors %}
+                            <div class="text-danger small">{{ form.date_of_joining.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        {{ form.address }}
+                        <label class="form-label">Total Salary (per month) *</label>
+                        <input type="number" name="salary" class="form-control" value="{{ form.salary.value|default:'' }}" step="0.01" required placeholder="Total monthly salary">
+                        <small class="form-text text-muted">Salary will be automatically split into components (Basic, HRA, Transport, Medical)</small>
+                        {% if form.salary.errors %}
+                        <div class="text-danger small">{{ form.salary.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Address *</label>
+                        <textarea name="address" class="form-control" rows="3" required>{{ form.address.value|default:'' }}</textarea>
+                        {% if form.address.errors %}
+                        <div class="text-danger small">{{ form.address.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Photo</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*">
+                        {% if form.photo.errors %}
+                        <div class="text-danger small">{{ form.photo.errors }}</div>
+                        {% endif %}
                     </div>
                     
                     <div class="mb-3 form-check">
-                        {{ form.is_active }}
-                        <label class="form-check-label">Active</label>
+                        <input type="checkbox" name="is_active" class="form-check-input" id="isActive" {% if form.is_active.value or action == 'Create' %}checked{% endif %}>
+                        <label class="form-check-label" for="isActive">Active</label>
+                        {% if form.is_active.errors %}
+                        <div class="text-danger small">{{ form.is_active.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        {% if action == 'Create' %}
+                        <strong>Note:</strong> Default password will be set to <code>password123</code>. Employee should change it after first login.
+                        {% else %}
+                        <strong>Note:</strong> User login credentials will not be changed when updating employee information.
+                        {% endif %}
                     </div>
                     
                     <div class="text-end">
-                        <a href="{% url 'employees:employee_list' %}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <a href="{% url 'employees:employee_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Employee
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    input[type="text"], input[type="email"], input[type="date"], 
-    input[type="number"], select, textarea {
-        width: 100%;
-        padding: 0.375rem 0.75rem;
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
-    }
-</style>
 {% endblock %}
