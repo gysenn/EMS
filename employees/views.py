@@ -2,14 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Q, Sum, Avg
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse, HttpResponseBadRequest
 from django.contrib.auth.models import User
 from accounts.decorators import role_required
 from .models import Employee, LeaveRequest, Attendance, SalaryComponent, Payroll
 from .forms import (EmployeeForm, LeaveRequestForm, LeaveApprovalForm, 
                     AttendanceForm, SalaryComponentForm, PayrollForm)
 from .utils import (export_employees_pdf, export_employees_excel, 
-                    export_attendance_excel, generate_salary_slip_pdf)
+                    export_attendance_excel, export_leaves_excel, generate_salary_slip_pdf)
 from datetime import datetime, timedelta
 from calendar import monthrange
 from accounts.models import UserProfile
@@ -247,27 +247,39 @@ def attendance_create(request):
 def export_employees(request, format):
     employees = Employee.objects.select_related('user').filter(is_active=True)
     
-    if format == 'pdf':
+    fmt = (format or '').lower()
+    if fmt == 'pdf':
         buffer = export_employees_pdf(employees)
-        response = HttpResponse(buffer, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="employees.pdf"'
-    elif format == 'excel':
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename='employees.pdf', content_type='application/pdf')
+    elif fmt in ('excel', 'xlsx', 'xls'):
         buffer = export_employees_excel(employees)
-        response = HttpResponse(buffer, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="employees.xlsx"'
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename='employees.xlsx', content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     else:
-        return HttpResponse('Invalid format', status=400)
-    
-    return response
+        return HttpResponseBadRequest(f'Invalid format "{format}". Supported values: "pdf", "excel"')
 
 @login_required
 @role_required(['admin', 'manager'])
 def export_attendance(request):
     attendance = Attendance.objects.select_related('employee__user').all()[:500]
     buffer = export_attendance_excel(attendance)
-    response = HttpResponse(buffer, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="attendance.xlsx"'
-    return response
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='attendance.xlsx', content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+
+@login_required
+@role_required(['admin', 'manager'])
+def export_leaves(request):
+    user_role = getattr(request.user.profile, 'role', 'employee') if hasattr(request.user, 'profile') else 'employee'
+    if user_role in ['admin', 'manager']:
+        leaves = LeaveRequest.objects.select_related('employee__user', 'approved_by').all()[:1000]
+    else:
+        leaves = LeaveRequest.objects.filter(employee=request.user.employee)
+
+    buffer = export_leaves_excel(leaves)
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='leaves.xlsx', content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 @login_required
 def dashboard(request):
     """Enhanced dashboard with analytics for all users"""
