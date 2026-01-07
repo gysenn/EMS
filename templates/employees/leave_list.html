@@ -8,9 +8,18 @@
         <h2>Leave Requests</h2>
     </div>
     <div class="col-md-6 text-end">
+        {% if user.profile.role == 'admin' or user.profile.role == 'manager' %}
         <a href="{% url 'employees:leave_create' %}" class="btn btn-primary">
             <i class="bi bi-plus-circle"></i> Request Leave
         </a>
+        <a href="{% url 'employees:export_leaves' %}" class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i> Export Excel
+        </a>
+        {% else %}
+        <a href="{% url 'employees:leave_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Request Leave
+        </a>
+        {% endif %}
     </div>
 </div>
 

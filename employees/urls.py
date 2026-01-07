@@ -21,8 +21,9 @@ urlpatterns = [
     path('attendance/create/', views.attendance_create, name='attendance_create'),
     
     # Export URLs
-    path('export/<str:format>/', views.export_employees, name='export_employees'),
     path('export/attendance/', views.export_attendance, name='export_attendance'),
+    path('export/leaves/', views.export_leaves, name='export_leaves'),
+    path('export/<str:format>/', views.export_employees, name='export_employees'),
     
     # Payroll URLs (NEW)
     path('payroll/', views.payroll_list, name='payroll_list'),

@@ -6,7 +6,7 @@
         <h2>Attendance Records</h2>
     </div>
     <div class="col-md-6 text-end">
-        {% if user.profile.role in 'admin,manager' %}
+        {% if user.profile.role == 'admin' or user.profile.role == 'manager' %}
         <a href="{% url 'employees:attendance_create' %}" class="btn btn-primary">Record Attendance</a>
         <a href="{% url 'employees:export_attendance' %}" class="btn btn-success">Export Excel</a>
         {% endif %}

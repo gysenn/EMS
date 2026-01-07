@@ -105,6 +105,36 @@ def export_attendance_excel(attendance_records):
     buffer.seek(0)
     return buffer
 
+def export_leaves_excel(leave_records):
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Leaves"
+
+    headers = ['Employee ID', 'Name', 'Leave Type', 'Start Date', 'End Date', 'Days', 'Reason', 'Status', 'Requested At']
+    ws.append(headers)
+
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+
+    for lr in leave_records:
+        ws.append([
+            lr.employee.employee_id,
+            lr.employee.user.get_full_name(),
+            lr.get_leave_type_display(),
+            lr.start_date.strftime('%Y-%m-%d') if lr.start_date else '',
+            lr.end_date.strftime('%Y-%m-%d') if lr.end_date else '',
+            lr.days_requested,
+            lr.reason,
+            lr.get_status_display(),
+            lr.created_at.strftime('%Y-%m-%d %H:%M') if hasattr(lr, 'created_at') and lr.created_at else ''
+        ])
+
+    buffer = BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+    return buffer
+
 def generate_salary_slip_pdf(payroll):
     """Generate professional salary slip PDF"""
     buffer = BytesIO()
